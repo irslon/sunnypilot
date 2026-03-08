@@ -68,20 +68,20 @@ def flash_panda(panda_serial: str) -> Panda:
   return panda
 
 
-def find_internal_panda(panda_serials: list[str]) -> str | None:
+def check_panda_support(panda_serials: list[str]) -> list[str]:
   spi_serials = set(Panda.spi_list())
   for serial in panda_serials:
     if serial in spi_serials:
-      return serial
+      return [serial]
 
   for serial in panda_serials:
     panda = Panda(serial)
     is_internal = panda.is_internal()
     panda.close()
     if is_internal:
-      return serial
+      return [serial]
 
-  return None
+  return panda_serials
 
 
 def main() -> None:
@@ -137,10 +137,7 @@ def main() -> None:
       flash_rivian_long(panda_serials)
 
       # find the internal supported panda (e.g. skip external Black Panda)
-      internal_serial = find_internal_panda(panda_serials)
-      if internal_serial is None:
-        continue
-      panda_serials = [internal_serial]
+      panda_serials = check_panda_support(panda_serials)
 
       # Flash the first panda
       panda_serial = panda_serials[0]
